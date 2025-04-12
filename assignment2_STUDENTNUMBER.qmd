@@ -12,7 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 install.packages("sf")
 ```
 
-Load the dataset
+### Task 1 : **Support for Independent Candidates** 
+
+#### 1. Load the dataset
 
 ```{r}
 # Load necessary packages
@@ -22,6 +24,8 @@ library(tidyverse)
 votes_2019 <- read_csv("data/election_by_division_2019.csv")
 votes_2022 <- read_csv("data/election_by_division_2022.csv")
 
+#dim(votes_2019)
+#dim(votes_2022)
 
 # Add a column to indicate the election year
 votes_2019 <- votes_2019 %>% mutate(election_year = 2019)
@@ -29,31 +33,78 @@ votes_2022 <- votes_2022 %>% mutate(election_year = 2022)
 
 combined_votes <- bind_rows(votes_2019, votes_2022)
 
-head(combined_votes)
+#head(combined_votes)
 
 write_csv(combined_votes, "data/combined_votes_2019_2022.csv")
 
 
 #dim(combined_votes)
-
-
 ```
+
+#### 2. Independent new/held/lost 
+
+Determine for each electoral **division** whether it was:
+
+-   **Held** by an Independent (won in both 2019 & 2022)
+
+-   **Gained/New** (not won in 2019, but won in 2022)
+
+-   **Lost** (won in 2019, but not in 2022)
+
+Filter independent candidates
 
 ```{r}
-library(sf)
-st_crs(aec_map) <- 4283
-
-
+ind_votes <- combined_votes %>%
+  filter(PartyAb == "IND")
 
 ```
 
-### Task 1
+**Winners by division** per year.
 
 ```{r}
-# Set projection to GDA1994 using EPSG:4283
-st_crs(aec_map$geometry, 4283)
-  
+top_candidates <- combined_votes %>%
+  group_by(election_year, DivisionId) %>%
+  filter(Votes == max(Votes)) %>%
+  ungroup()
+
+top_candidates
 ```
+
+Dataset of winners who were independent
+
+```{r}
+ind_wins <- top_candidates %>%
+  filter(PartyAb == "IND") %>%
+  select(DivisionId, DivisionName, election_year)
+
+```
+
+Pivot to compare 2019 vs 2022 side-by-side
+
+```{r}
+ind_wins_pivot <- ind_wins %>%
+  mutate(ind_won = TRUE) %>%
+  pivot_wider(names_from = election_year, values_from = ind_won, names_prefix = "year_")
+
+```
+
+Classify the outcome per division
+
+```{r}
+ind_wins_pivot <- ind_wins_pivot %>%
+  mutate(status = case_when(
+    year_2019 == TRUE & year_2022 == TRUE ~ "Held",
+    is.na(year_2019) & year_2022 == TRUE ~ "Gained/New",
+    year_2019 == TRUE & is.na(year_2022) ~ "Lost",
+    TRUE ~ "Other"
+  ))
+
+ind_wins_pivot
+```
+
+#### 3. Previously held independent seats win in 2022
+
+commit
 
 ### Task 2
 
