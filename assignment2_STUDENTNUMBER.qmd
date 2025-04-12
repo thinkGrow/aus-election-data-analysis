@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 install.packages("sf")
 ```
 
-### Task 1 : **Support for Independent Candidates** 
+### Task 1 : **Support for Independent Candidates**
 
 #### 1. Load the dataset
 
@@ -41,7 +41,7 @@ write_csv(combined_votes, "data/combined_votes_2019_2022.csv")
 #dim(combined_votes)
 ```
 
-#### 2. Independent new/held/lost 
+#### 2. Independent new/held/lost
 
 Determine for each electoral **division** whether it was:
 
@@ -161,9 +161,9 @@ Pros and Cons
 |-------------|--------------------------------------------------------------------------------|-------------------------------------------------------------|
 | ✅ **Pros** | Shows **actual volume** of support --- useful for seeing how many people voted | Accounts for **differences in population** across divisions |
 
-|             |                                                                                                                      |                                                                                                        |
-|-------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| ❌ **Cons** | Doesn\'t account for **division size** --- 10,000 votes in one place could be a landslide or insignificant elsewhere | Can **hide growth** if population changed --- a stable percentage may still mean thousands more people |
+|             |                                                                                                                     |                                                                                                        |
+|-------------|---------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
+| ❌ **Cons** | Doesn't account for **division size** --- 10,000 votes in one place could be a landslide or insignificant elsewhere | Can **hide growth** if population changed --- a stable percentage may still mean thousands more people |
 
 ### Task 2
 
