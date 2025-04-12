@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-install.packages("sf")
+#install.packages("sf")
 ```
 
 ### Task 1 : **Support for Independent Candidates**
@@ -19,6 +19,8 @@ install.packages("sf")
 ```{r}
 # Load necessary packages
 library(tidyverse)
+library(ggplot2)
+
 
 # Read in the data
 votes_2019 <- read_csv("data/election_by_division_2019.csv")
@@ -158,12 +160,88 @@ Pros and Cons
 |------------|---------------------|-------------------------|
 
 |             |                                                                                |                                                             |
-|-------------|--------------------------------------------------------------------------------|-------------------------------------------------------------|
+|---------------|---------------------------------|-------------------------|
 | ✅ **Pros** | Shows **actual volume** of support --- useful for seeing how many people voted | Accounts for **differences in population** across divisions |
 
 |             |                                                                                                                     |                                                                                                        |
-|-------------|---------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
+|--------------|-------------------------------|---------------------------|
 | ❌ **Cons** | Doesn't account for **division size** --- 10,000 votes in one place could be a landslide or insignificant elsewhere | Can **hide growth** if population changed --- a stable percentage may still mean thousands more people |
+
+#### 5. Change in first round votes between 2019 and 2022 elections for each electorate
+
+```{r}
+# Summarise non-major votes per division per year
+non_major_summary <- combined_votes %>%
+  filter(!(PartyAb %in% c("ALP", "LP", "NA"))) %>%  # Exclude major parties and informal
+  group_by(DivisionId, DivisionName, election_year) %>%
+  summarise(non_major_votes = sum(Votes), .groups = "drop")
+
+# Pivot to wide format: one row per division, columns for 2019 and 2022
+non_major_wide <- non_major_summary %>%
+  pivot_wider(names_from = election_year, values_from = non_major_votes, names_prefix = "votes_")
+
+# Calculate the change from 2019 to 2022
+non_major_wide <- non_major_wide %>%
+  mutate(vote_change = votes_2022 - votes_2019)
+
+non_major_wide
+
+```
+
+**📌 Assumptions made:**
+
+1.  **Only valid votes** for **non-major parties** were included:
+
+    -   Excluded **ALP**, **LP**, and **Informal (NA)** votes.
+
+    -   This isolates genuine support for **minor parties and independents**.
+
+2.  The vote totals are **first-preference votes** --- we're assuming the `Votes` column reflects these.
+
+3.  The analysis assumes **consistency in division boundaries** between 2019 and 2022:
+
+    -   If electorates were **redistributed or renamed**, this could affect accuracy.
+
+4.  Voter population may have changed, but we're using **raw counts**, not percentages
+
+    -   So this reflects the **absolute** increase or decrease in minor party support --- not normalized by turnout.
+
+#### 6. Visualization
+
+```{r}
+
+ggplot(na.omit(non_major_wide), aes(x = vote_change)) +
+  geom_histogram(binwidth = 1000, fill = "steelblue", color = "white") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Change in First-Preference Votes for Non-Major Parties (2019 → 2022)",
+    x = "Change in Votes",
+    y = "Number of Electorates"
+  ) +
+  theme_minimal()
+
+
+```
+
+-   **Center around 0**: Many electorates had small changes.
+
+-   **Right skew**: More electorates saw an increase in non-major party votes than a decrease.
+
+-   **Left tail**: A smaller number of electorates lost a significant number of votes for non-major parties.
+
+-   The **red dashed line at 0** highlights where there's no change.
+
+#### 7. Emergence of geographical patterns
+
+Load demographic classification data\
+\[https://www.aec.gov.au/Electorates/files/demographic-classification.xlsx\]
+
+```{r}
+
+demographic_classification <- read_csv("data/demographic_classification.csv", col_names=TRUE, skip=0)
+
+head(demographic_classification)
+```
 
 ### Task 2
 
