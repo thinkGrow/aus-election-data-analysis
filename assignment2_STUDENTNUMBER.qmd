@@ -1,0 +1,68 @@
+---
+title: "ETC5512: Assignment 2"
+author: "ADD YOUR NAME HERE" 
+editor: visual
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) 
+```
+
+```{r}
+install.packages("sf")
+```
+
+Load the dataset
+
+```{r}
+# Load necessary packages
+library(tidyverse)
+
+# Read in the data
+votes_2019 <- read_csv("data/election_by_division_2019.csv")
+votes_2022 <- read_csv("data/election_by_division_2022.csv")
+
+
+# Add a column to indicate the election year
+votes_2019 <- votes_2019 %>% mutate(election_year = 2019)
+votes_2022 <- votes_2022 %>% mutate(election_year = 2022)
+
+combined_votes <- bind_rows(votes_2019, votes_2022)
+
+head(combined_votes)
+
+write_csv(combined_votes, "data/combined_votes_2019_2022.csv")
+
+
+#dim(combined_votes)
+
+
+```
+
+```{r}
+library(sf)
+st_crs(aec_map) <- 4283
+
+
+
+```
+
+### Task 1
+
+```{r}
+# Set projection to GDA1994 using EPSG:4283
+st_crs(aec_map$geometry, 4283)
+  
+```
+
+### Task 2
+
+Put you Task 2 answers here
+
+### Citations
+
+Add you citations here
+
+### AI acknowledgment
+
+Share you AI acknowledgement and queries here
