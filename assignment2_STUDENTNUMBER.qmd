@@ -102,9 +102,68 @@ ind_wins_pivot <- ind_wins_pivot %>%
 ind_wins_pivot
 ```
 
-#### 3. Previously held independent seats win in 2022
+#### 3. For each **division won by independents in 2022**, determine:
 
-commit
+-   Which **party** held that seat in **2019**
+
+Seats won by independents in 2022
+
+```{r}
+ind_2022_wins <- combined_votes %>%
+  filter(election_year == 2022) %>%
+  group_by(DivisionId) %>%
+  filter(Votes == max(Votes)) %>%
+  ungroup() %>%
+  filter(PartyAb == "IND") %>%
+  select(DivisionId, DivisionName)
+
+```
+
+2019 winners for those divisions
+
+```{r}
+winners_2019 <- combined_votes %>%
+  filter(election_year == 2019) %>%
+  group_by(DivisionId) %>%
+  filter(Votes == max(Votes)) %>%
+  ungroup() %>%
+  select(DivisionId, DivisionName, PartyAb)  # 2019 winners
+
+```
+
+Join the winners
+
+```{r}
+ind_2022_previous_parties <- ind_2022_wins %>%
+  left_join(winners_2019, by = c("DivisionId", "DivisionName")) %>%
+  rename(Previous_Party_2019 = PartyAb)
+
+ind_2022_previous_parties
+```
+
+#### 4. Votes for non-major parties
+
+Filter for candidates NOT from the two major parties
+
+```{r}
+
+non_major_votes <- combined_votes %>%
+  filter(!(PartyAb %in% c("ALP", "LP", "NA")))  # Exclude Labor, Liberal, and Informal
+
+```
+
+Pros and Cons
+
+| **Aspect** | **Raw Vote Counts** | **Percentage of Votes** |
+|------------|---------------------|-------------------------|
+
+|             |                                                                                |                                                             |
+|-------------|--------------------------------------------------------------------------------|-------------------------------------------------------------|
+| ✅ **Pros** | Shows **actual volume** of support --- useful for seeing how many people voted | Accounts for **differences in population** across divisions |
+
+|             |                                                                                                                      |                                                                                                        |
+|-------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
+| ❌ **Cons** | Doesn\'t account for **division size** --- 10,000 votes in one place could be a landslide or insignificant elsewhere | Can **hide growth** if population changed --- a stable percentage may still mean thousands more people |
 
 ### Task 2
 
